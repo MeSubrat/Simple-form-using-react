@@ -90,4 +90,8 @@ button:active{
   color: red;
   margin-top: 2px;
 }
+.submitted-data{
+  display: flex;
+  flex-direction: column;
+}
 

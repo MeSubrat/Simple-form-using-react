@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import ReactDOM from "react-dom";
 import './App.css'
 import { useForm } from "react-hook-form";
 
@@ -14,8 +15,62 @@ function App() {
   const {
     register, handleSubmit, watch, formState: { errors }
   } = useForm();
-  const onSubmit = data => console.log(data);
+  // const onSubmit = data => console.log(data);
+  const [submittedData,setSubmittedData]=useState([]);
 
+  useEffect(()=>{
+    const savedData=JSON.parse(localStorage.getItem('submittedData')) || [];
+    setSubmittedData(savedData);
+  },[]);
+
+  const onSubmit=(data)=>{
+    const updatedData=[...submittedData,data];
+    localStorage.setItem('submittedData',JSON.stringify(updatedData));
+    setSubmittedData(updatedData);
+    console.log(data);
+    setFormData({
+      FirstName: "",
+      LastName: "",
+      Email: "",
+      Contact: "",
+      Gender: "",
+      MaritalStatus: ""
+    });
+    setPortalOpen(true);
+  }
+  const [isPortalOpen,setPortalOpen]=useState(false);
+  const Portal=({submittedData,onClose})=>{
+    return ReactDOM.createPortal(
+      <div className="submitted-data">
+        <h2 style={{ textAlign: "center", color: 'blue' }}>Submitted Data</h2>
+        <table>
+          <thead>
+            <tr>
+              <th><b>First Name</b></th>
+              <th><b>Last Name</b></th>
+              <th><b>Contact Number</b></th>
+              <th><b>Email</b></th>
+              <th><b>Gender</b></th>
+              <th><b>Marital Status</b></th>
+            </tr>
+          </thead>
+          <tbody>
+            {submittedData.map((data,idx)=>(
+              <tr key={idx}>
+                <td>{data.FirstName}</td>
+                <td>{data.LastName}</td>
+                <td>{data.Contact}</td>
+                <td>{data.Email}</td>
+                <td>{data.Gender}</td>
+                <td>{data.MaritalStatus}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <button onClick={onClose} style={{ marginTop: '20px' }}>Close</button>
+      </div>,document.body
+    );
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -96,13 +151,13 @@ function App() {
             <label>
               Marital Status
               <br />
-              <select {...register("maritalStatus",{required:{value:true,message:"Marital Status is required"}})}>
+              <select {...register("MaritalStatus",{required:{value:true,message:"Marital Status is required"}})}>
                 <option value="">Select marital Status</option>
                 <option value='Married'>Married</option>
                 <option value='Single'>Single</option>
                 <option value='Divorced'>Divorced</option>
               </select>
-              {errors.maritalStatus && <span className="error-message">{errors.maritalStatus.message}</span>}
+              {errors.MaritalStatus && <span className="error-message">{errors.maritalStatus.message}</span>}
             </label>    
             <br></br>
             <div><label >Gender
@@ -113,13 +168,15 @@ function App() {
             </label></div>
           </div>
           <div className="btns">
-            <button>Submit</button>
+            <button >Submit</button>
             <button onClick={() => setFormData({ FirstName: "", LastName: "", Email: "", Contact: "", Gender: "", MaritalStatus:""})} >Reset</button>
           </div>
         </div>
       </form>
+      {isPortalOpen && <Portal submittedData={submittedData} onClose={()=>setPortalOpen(false)}/>}
     </div>
   );
 }
+
 
 export default App;
